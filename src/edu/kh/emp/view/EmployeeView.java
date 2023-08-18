@@ -2,6 +2,7 @@ package edu.kh.emp.view;
 
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 import edu.kh.emp.model.service.EmployeeService;
@@ -69,11 +70,11 @@ public class EmployeeView {
 				case 3:  selectEmpId();   break;
 				case 4:  updateEmployee();   break;
 				case 5:  deleteEmployee();   break;
-				case 6:  selectDeptTitleEmp(); break;
-				case 7:  
-				case 8:
-				case 9:
-				case 10:
+				case 6:  selectDeptEmp();   break;
+				case 7:  selectSalaryEmp();   break;
+				case 8:  selectDeptTotalSalary();   break;
+				case 9:  selectEmpNo();   break;
+				case 10: selectJobAvgSalary();   break;
 				case 0:  System.out.println("프로그램을 종료합니다...");   break;
 				default: System.out.println("메뉴에 존재하는 번호만 입력하세요.");
 				}
@@ -93,6 +94,76 @@ public class EmployeeView {
 	}
 	
 	// 주 기능 메서드
+
+	/** 직급별 급여 평균 조회
+	 * 
+	 */
+	private void selectJobAvgSalary() throws Exception{
+		System.out.println("<직급별 급여 평균 조회>");
+		Map<String, Double> map = service.selectJobAvgSalary();
+		
+		for(String key : map.keySet()) {
+			System.out.println( key + " : " + map.get(key) + "원" );
+		}
+		
+	}
+
+	/** 주민등록 번호가 일치하는 사원 정보 조회
+	 * 
+	 */
+	private void selectEmpNo() throws Exception{
+		System.out.println("<주민등록 번호가 일치하는 사원 정보 조회>");
+		System.out.print("주민등록번호 입력 : ");
+		String empNo = sc.next();
+		
+		Employee emp = service.selectEmpNo(empNo);
+		printOne(emp);
+		
+		//printOne(service.selectEmpNo(empNo))
+		
+	}
+
+	/** 부서별 급여 합 전체 조회
+	 * 
+	 */
+	private void selectDeptTotalSalary()  throws Exception{
+		System.out.println("<부서별 급여 합 전체 조회>");
+		
+		// D1 : 8000000원
+		Map<String, Integer> map = service.selectDeptTotalSalary();
+		
+		for( String key : map.keySet() ) {
+			
+		   System.out.println( key + " : " +   map.get(key) );
+			
+		}
+		
+	}
+
+	/** 입력 받은 급여 이상을 받는 모든 사원 정보 조회
+	 * 
+	 */
+	private void selectSalaryEmp() throws Exception{
+		System.out.println("<입력받은 급여 이상을 받는 모든 사원 정보 조회>");
+		
+		System.out.print("급여 : ");
+		int salary = sc.nextInt();
+		
+		printAll( service.selectSalaryEmp(salary) );
+		
+	}
+
+	/** 입력 받은 부서와 일치하는 모든 사원 정보 조회
+	 * 
+	 */
+	private void selectDeptEmp() throws Exception{
+		System.out.println("<입력받은 부서와 일치하는 모든 사원 정보 조회>");
+		
+		System.out.print("부서명 : ");
+		String departmentTitle = sc.nextLine();
+		
+		printAll( service.selectDeptEmp(departmentTitle) );
+	}
 
 	/** 사번이 일치하는 사원 정보 삭제
 	 * 
@@ -307,36 +378,6 @@ public class EmployeeView {
 
 	}
 	
-	/** 부서명을 입력받는 메서드
-	 * @return
-	 */
-	public String inputDeptTitle() {
-		System.out.print("부서명을 입력해주세요 : ");
-		String deptTitle = sc.next();
-		sc.nextLine();
-		return deptTitle;
-	}
-	
-	/** 급여를 입력받는 메서드
-	 * @return
-	 */
-	public int inputSalary() {
-		System.out.print("급여를 입력해주세요 : ");
-		int salary = sc.nextInt();
-		sc.nextLine();
-		return salary;
-	}
-	
-
-	public void selectDeptTitleEmp() throws Exception {
-		System.out.println("<입력한 부서명의 사원 조회>");
-		
-		String deptTitle = inputDeptTitle();
-		
-		Employee emp = service.selectDeptTitle(deptTitle);
-		
-		printOne(emp);
-	}
 
 	
 	

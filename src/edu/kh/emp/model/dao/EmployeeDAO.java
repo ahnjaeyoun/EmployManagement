@@ -6,7 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import static edu.kh.emp.common.JDBCTemplate.*;
 
@@ -225,45 +227,213 @@ public class EmployeeDAO {
 		
 		return result;
 	}
-	
-	public Employee selectDeptTitle(Connection conn, String deptTitle) throws Exception{
+
+	/** 입력 받은 부서와 일치하는 모든 사원 정보 조회 DAO
+	 * @param conn
+	 * @param departmentTitle
+	 * @return
+	 */
+	public List<Employee> selectDeptEmp(Connection conn, String departmentTitle) throws Exception{
 		
-		Employee emp = null;
+		List<Employee> empList = new ArrayList<Employee>();
 		
 		try {
 			
-			String sql = prop.getProperty("selectDeptTitle");
+			String sql = prop.getProperty("selectDeptEmp");
 			
 			pstmt = conn.prepareStatement(sql);
 			
-			pstmt.setString(1, deptTitle);
+			pstmt.setString(1, departmentTitle);
 			
 			rs = pstmt.executeQuery();
 			
-			if(rs.next()) {
+			while(rs.next()) {
 				
-				int empId = rs.getInt("EMP_ID");
+				int empId = rs.getInt("EMP_ID"); 
 				String empName = rs.getString("EMP_NAME");
 				String empNo = rs.getString("EMP_NO");
 				String email = rs.getString("EMAIL");
 				String phone = rs.getString("PHONE");
+				//String departmentTitle_1 = rs.getString("DEPT_TITLE");
 				String jobName = rs.getString("JOB_NAME");
 				int salary = rs.getInt("SALARY");
 				
-				emp = new Employee(empId, empName, empNo, email,
-								phone, deptTitle, jobName, salary
-						);
+				Employee emp = new Employee(empId, empName, empNo, email, 
+								phone, departmentTitle, jobName, salary);
 				
-				
+				empList.add(emp);
 			}
+			
 			
 			
 		} finally {
 			close(pstmt);
 		}
 		
+		return empList;
+	}
+
+	/** 입력 받은 급여 이상을 받는 모든 사원 정보 조회 DAO
+	 * @param conn
+	 * @param salary
+	 * @return
+	 */
+	public List<Employee> selectSalaryEmp(Connection conn, int salary) throws Exception{
+		List<Employee> empList = new ArrayList<Employee>();
+		
+
+		try {
+			
+			String sql = prop.getProperty("selectSalaryEmp");
+			
+			pstmt = conn.prepareStatement(sql);
+			
+			pstmt.setInt(1, salary);
+			
+			rs = pstmt.executeQuery();
+			
+			while(rs.next()) {
+				
+				int empId = rs.getInt("EMP_ID"); 
+				String empName = rs.getString("EMP_NAME");
+				String empNo = rs.getString("EMP_NO");
+				String email = rs.getString("EMAIL");
+				String phone = rs.getString("PHONE");
+				String departmentTitle = rs.getString("DEPT_TITLE");
+				String jobName = rs.getString("JOB_NAME");
+				int selectSalary = rs.getInt("SALARY");
+				
+				Employee emp = new Employee(empId, empName, empNo, email, 
+								phone, departmentTitle, jobName, selectSalary);
+				
+				empList.add(emp);
+			}
+			
+			
+			
+		} finally {
+			close(pstmt);
+		}
+		
+		return empList;
+	}
+
+	/** 부서별 급여 합 전체 조회 DAO
+	 * @param conn
+	 * @return
+	 */
+	public Map<String, Integer> selectDeptTotalSalary(Connection conn) throws Exception {
+		
+		Map<String , Integer> map = new LinkedHashMap<String, Integer>();
+		// LinkedHashMap : key 순서가 유지되는 HashMap (ORDER BY 절 정렬 결과 그대로 저장함)
+		
+		try {
+			String sql = prop.getProperty("selectDeptTotalSalary");
+			
+			stmt = conn.createStatement();
+			
+			rs = stmt.executeQuery(sql);
+			
+			while(rs.next()) {
+				String deptCode = rs.getString("DEPT_CODE");
+				int total = rs.getInt("TOTAL");
+				
+				map.put(deptCode, total);
+			}
+			
+			
+		} finally {
+			close(stmt);
+		}
+		
+		return map;
+	}
+
+	/** 주민등록 번호가 일치하는 사원 정보 조회 DAO
+	 * @param conn
+	 * @param empNo
+	 * @return
+	 */
+	public Employee selectEmpNo(Connection conn, String empNo) throws Exception{
+		
+		// 결과 저장용 변수 선언
+		Employee emp = null;
+		
+		try {
+			String sql = prop.getProperty("selectEmpNo");
+			
+			pstmt = conn.prepareStatement(sql);
+			
+			// ? 에 알맞은값 대입
+			pstmt.setString(1, empNo);
+			
+			// SQL 수행 후 결과 반환
+			rs = pstmt.executeQuery();
+			
+			if(rs.next()) {
+				int empId = rs.getInt("EMP_ID"); 
+				String empName = rs.getString("EMP_NAME");
+				//String empNo = rs.getString("EMP_NO");
+				String email = rs.getString("EMAIL");
+				String phone = rs.getString("PHONE");
+				String departmentTitle = rs.getString("DEPT_TITLE");
+				String jobName = rs.getString("JOB_NAME");
+				int salary = rs.getInt("SALARY");
+				
+				emp = new Employee(empId, empName, empNo, email, 
+								phone, departmentTitle, jobName, salary);
+			}
+			
+		}finally {
+			close(pstmt);
+		}
+		
 		return emp;
 	}
+
+	/** 직급별 급여 평균 조회 DAO
+	 * @param conn
+	 * @return
+	 */
+	public Map<String, Double> selectJobAvgSalary(Connection conn) throws Exception{
+		
+		Map<String, Double> map = new LinkedHashMap<>();
+
+		try{
+			String sql = prop.getProperty("selectJobAvgSalary");
+			
+			stmt = conn.createStatement();
+			rs = stmt.executeQuery(sql);
+			
+			while(rs.next()) {
+				String jobName = rs.getString("JOB_NAME");
+				double average = rs.getDouble("AVERAGE");
+				
+				map.put(jobName, average);
+			}
+			
+			
+		}finally {
+			close(stmt);
+		}
+		
+		
+		return map;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
